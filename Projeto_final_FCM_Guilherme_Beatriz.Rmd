@@ -1,0 +1,104 @@
+---
+title: "Projeto Final FCM: Análise descritiva em um dataset sobre diabetes "
+author: "Guilherme Rodrigues e Beatriz Magiore"
+date: "2023-06-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+# Introdução
+
+O conjunto de dados *Diabetes Prediction* é uma coleção de informações relacionadas a pacientes submetidos a testes médicos para avaliar a possibilidade de desenvolver diabetes. Esses dados podem ser utilizados para realizar análises descritivas e exploratórias visando compreender melhor os fatores associados à doença.
+
+A análise descritiva desses dados, considerando estatísticas básicas, distribuições, relações entre variáveis e comparação entre grupos, pode auxiliar na compreensão de fatores relacionados ao desenvolvimento da doença. Além disso, essas análises podem auxiliar no desenvolvimento de estratégias de prevenção e tratamento mais eficazes para o diabetes.
+
+## Análise descritiva considerando apenas os dados dicotomizados
+
+Nesta primeira rodada de análises descritivas vamos mostrar alguns resultados acerca dos dados dicotomizados presentes no *dataset*, isto é, 0 para a presença e 1 para a ausência de determinada doença. Desse modo, podemos utilizar a distribuição de Bernoulli dada por
+\[f(k;p)=p^k(1-p)^{1-k}, \text{ para }k\in{0,1}.\]
+Sabemos que o valor esperado de uma variável aleatória de Bernoulli $X$ é $E(X)=p$ e a variância é dada por $Var(X)=p(1-p)$.
+
+Vamos carregar as bibliotecas:
+
+```{r}
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+Chamando o conjunto de dados, temos:
+
+```{r}
+dados <- read.csv("./diabetes_prediction_dataset.csv")
+head(dados)
+
+```
+
+Avaliando a quantidade de linhas, ou seja, de pacientes:
+```{r}
+nrow(dados) 
+```
+
+O conjunto de dados de previsão de diabetes disponível em <https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset?select=diabetes_prediction_dataset.csv> consiste em uma compilação de informações médicas e demográficas de 100 mil pacientes (100 mil linhas), acompanhadas da condição de diabetes (1 para a presença de diabetes e 0 para ausência de diabetes). Os atributos abrangem uma variedade de características, incluindo idade, gênero, índice de massa corporal (IMC), hipertensão, doenças cardíacas, histórico de tabagismo, nível de HbA1c (hemoglobina glicada) e nível de glicose no sangue. 
+
+Neste primeiro momento, nosso interesse está voltado apenas para os pacientes que tem o hábito de fumar. Então, filtramos todos os pacientes que não forneceram esta informação da seguinte forma:
+
+```{r}
+dados_info_smoking <- dados %>% filter(smoking_history != "No Info")
+head(dados_info_smoking)
+
+dados_info_smoking %>% nrow()
+
+```
+
+Note que tal filtragem reduziu a quantidade de pacientes de 100 mil para 64.184 pacientes. Nesta primeira análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease, diabetes*, que fornecem os dados quanto a presença e ausência das doenças. A filtragem foi realizada da seguinte forma:
+
+```{r}
+dados_dicotomicos <- dados_info_smoking %>% select(gender, hypertension, heart_disease, diabetes)
+head(dados_dicotomicos)
+```
+No conjunto de dados dicotômicos, notamos que alguns pacientes informaram o gênero como *Others*. Para evitar divisão por zero no cálculo dos coeficientes de variação, analisamos os dados de saude dessa população em específico. Segue que
+
+```{r}
+dados_dicotomicos %>% filter(gender == "Other") %>% View()
+
+```
+
+Dos mais de 64 mil pacientes, 12 pacientes não forneceram dados de gênero e nehum deles apresentou alguma das três doenças analisadas neste primeiro momento. Portanto, também os excluímos desta primeira análise. Segue que
+
+```{r}
+dados_dicotomicos_gender_others <- dados_dicotomicos %>% filter(gender != "Other")
+```
+
+Para avaliar se os pacientes saíram do banco de dados podemos utilizar o comando grepl:
+```{r}
+gender_other_search <- sum(grepl("Other", dados_dicotomicos_gender_others$gender))
+print(gender_other_search)
+```
+Agora, com a garantia de que não ocorrerá divisão por zero no cálculo dos coeficientes de variação, dado que os pacientes que declaram seu gênero como *Others* não possuem nenhuma das doenças analisadas aqui, podemos extrair algumas informações de média, desvio padrão e coeficiente de variação separado por gênero. Segue que
+
+```{r}
+dados_dicotomicos_exploration <- dados_dicotomicos_gender_others %>%
+  group_by(gender) %>%
+  summarise(
+    media_hypertension=mean(hypertension),
+    media_heart_desease = mean(heart_disease),
+    media_diabetes = mean(diabetes),
+    dp_hypertension=sd(hypertension),
+    dp_heart_desease = sd(heart_disease),
+    dp_diabetes = sd(diabetes),
+    CV_hypertension=dp_hypertension/media_hypertension,
+    CV_heart_desease = dp_heart_desease/media_heart_desease,
+    CV_diabetes = dp_diabetes/media_diabetes,
+    N = n()
+  )
+head(dados_dicotomicos_exploration)
+```
+
+Como resultados preliminares desta primeira análise, podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
+
