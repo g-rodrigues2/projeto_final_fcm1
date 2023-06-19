@@ -11,7 +11,7 @@
 
 <meta name="author" content="Guilherme Rodrigues e Beatriz Magiore" />
 
-<meta name="date" content="2023-06-16" />
+<meta name="date" content="2023-06-19" />
 
 <title>Projeto Final FCM: Análise descritiva em um dataset sobre diabetes</title>
 
@@ -353,7 +353,7 @@ display: none;
 <h1 class="title toc-ignore">Projeto Final FCM: Análise descritiva em um
 dataset sobre diabetes</h1>
 <h4 class="author">Guilherme Rodrigues e Beatriz Magiore</h4>
-<h4 class="date">2023-06-16</h4>
+<h4 class="date">2023-06-19</h4>
 
 </div>
 
@@ -370,14 +370,6 @@ distribuições, relações entre variáveis e comparação entre grupos, pode
 auxiliar na compreensão de fatores relacionados ao desenvolvimento da
 doença. Além disso, essas análises podem auxiliar no desenvolvimento de
 estratégias de prevenção e tratamento mais eficazes para o diabetes.</p>
-<div id="análise-descritiva-considerando-apenas-os-dados-dicotomizados" class="section level2">
-<h2>Análise descritiva considerando apenas os dados dicotomizados</h2>
-<p>Nesta primeira rodada de análises descritivas vamos mostrar alguns
-resultados acerca dos dados dicotomizados presentes no <em>dataset</em>,
-isto é, 0 para a presença e 1 para a ausência de determinada doença.
-Desse modo, podemos utilizar a distribuição de Bernoulli dada por <span class="math display">\[f(k;p)=p^k(1-p)^{1-k}, \text{ para
-}k\in{0,1}.\]</span> Sabemos que o valor esperado de uma variável
-aleatória de Bernoulli <span class="math inline">\(X\)</span> é <span class="math inline">\(E(X)=p\)</span> e a variância é dada por <span class="math inline">\(Var(X)=p(1-p)\)</span>.</p>
 <p>Vamos carregar as bibliotecas:</p>
 <pre class="r"><code>library(ggplot2)
 library(tidyr)
@@ -418,53 +410,57 @@ abrangem uma variedade de características, incluindo idade, gênero,
 índice de massa corporal (IMC), hipertensão, doenças cardíacas,
 histórico de tabagismo, nível de HbA1c (hemoglobina glicada) e nível de
 glicose no sangue.</p>
-<p>Neste primeiro momento, nosso interesse está voltado apenas para os
-pacientes que tem o hábito de fumar. Então, filtramos todos os pacientes
-que não forneceram esta informação da seguinte forma:</p>
-<pre class="r"><code>dados_info_smoking &lt;- dados %&gt;% filter(smoking_history != &quot;No Info&quot;)
-head(dados_info_smoking)</code></pre>
-<pre><code>##   gender age hypertension heart_disease smoking_history   bmi HbA1c_level
-## 1 Female  80            0             1           never 25.19         6.6
-## 2   Male  28            0             0           never 27.32         5.7
-## 3 Female  36            0             0         current 23.45         5.0
-## 4   Male  76            1             1         current 20.14         4.8
-## 5 Female  20            0             0           never 27.32         6.6
-## 6 Female  44            0             0           never 19.31         6.5
-##   blood_glucose_level diabetes
-## 1                 140        0
-## 2                 158        0
-## 3                 155        0
-## 4                 155        0
-## 5                  85        0
-## 6                 200        1</code></pre>
-<pre class="r"><code>dados_info_smoking %&gt;% nrow()</code></pre>
-<pre><code>## [1] 64184</code></pre>
-<p>Note que tal filtragem reduziu a quantidade de pacientes de 100 mil
-para 64.184 pacientes. Nesta primeira análise, voltaremos nossa atenção
-para as colunas <em>gender, hypertension, heart_disease, diabetes</em>,
-que fornecem os dados quanto a presença e ausência das doenças. A
-filtragem foi realizada da seguinte forma:</p>
-<pre class="r"><code>dados_dicotomicos &lt;- dados_info_smoking %&gt;% select(gender, hypertension, heart_disease, diabetes)
+<div id="análise-descritiva-considerando-apenas-os-dados-dicotomizados" class="section level2">
+<h2>Análise descritiva considerando apenas os dados dicotomizados</h2>
+<p>Nesta primeira rodada de análises descritivas vamos mostrar alguns
+resultados acerca dos dados dicotomizados presentes no <em>dataset</em>,
+isto é, 0 para a presença e 1 para a ausência de determinada doença.
+Desse modo, podemos utilizar a distribuição de Bernoulli dada por <span class="math display">\[f(k;p)=p^k(1-p)^{1-k}, \text{ para
+}k\in{0,1}.\]</span> Sabemos que o valor esperado de uma variável
+aleatória de Bernoulli <span class="math inline">\(X\)</span> é <span class="math inline">\(E(X)=p\)</span> e a variância é dada por <span class="math inline">\(Var(X)=p(1-p)\)</span>.</p>
+<p>Nesta análise, voltaremos nossa atenção para as colunas <em>gender,
+hypertension, heart_disease, diabetes</em>. A filtragem foi realizada da
+seguinte forma:</p>
+<pre class="r"><code>dados_dicotomicos &lt;- dados %&gt;% select(gender, hypertension, heart_disease, diabetes)
 head(dados_dicotomicos)</code></pre>
 <pre><code>##   gender hypertension heart_disease diabetes
 ## 1 Female            0             1        0
-## 2   Male            0             0        0
-## 3 Female            0             0        0
-## 4   Male            1             1        0
-## 5 Female            0             0        0
-## 6 Female            0             0        1</code></pre>
+## 2 Female            0             0        0
+## 3   Male            0             0        0
+## 4 Female            0             0        0
+## 5   Male            1             1        0
+## 6 Female            0             0        0</code></pre>
 <p>No conjunto de dados dicotômicos, notamos que alguns pacientes
 informaram o gênero como <em>Others</em>. Para evitar divisão por zero
 no cálculo dos coeficientes de variação, analisamos os dados de saude
 dessa população em específico. Segue que</p>
-<pre class="r"><code>dados_dicotomicos %&gt;% filter(gender == &quot;Other&quot;) %&gt;% View()</code></pre>
-<p>Dos mais de 64 mil pacientes, 12 pacientes não forneceram dados de
-gênero e nehum deles apresentou alguma das três doenças analisadas neste
-primeiro momento. Portanto, também os excluímos desta primeira análise.
+<pre class="r"><code>(dados_dicotomicos %&gt;% filter(gender == &quot;Other&quot;))</code></pre>
+<pre><code>##    gender hypertension heart_disease diabetes
+## 1   Other            0             0        0
+## 2   Other            0             0        0
+## 3   Other            0             0        0
+## 4   Other            0             0        0
+## 5   Other            0             0        0
+## 6   Other            0             0        0
+## 7   Other            0             0        0
+## 8   Other            0             0        0
+## 9   Other            0             0        0
+## 10  Other            0             0        0
+## 11  Other            0             0        0
+## 12  Other            0             0        0
+## 13  Other            0             0        0
+## 14  Other            0             0        0
+## 15  Other            0             0        0
+## 16  Other            0             0        0
+## 17  Other            0             0        0
+## 18  Other            0             0        0</code></pre>
+<p>Dos mais de 64 mil pacientes, 18 pacientes se identificaram com outro
+gênero e nenhum deles apresentou alguma das três doenças analisadas
+neste primeiro momento. Portanto, os excluímos desta primeira análise.
 Segue que</p>
 <pre class="r"><code>dados_dicotomicos_gender_others &lt;- dados_dicotomicos %&gt;% filter(gender != &quot;Other&quot;)</code></pre>
 <p>Para avaliar se os pacientes saíram do banco de dados podemos
-utilizar o comando grepl:</p>
+utilizar o comando <em>grepl</em>:</p>
 <pre class="r"><code>gender_other_search &lt;- sum(grepl(&quot;Other&quot;, dados_dicotomicos_gender_others$gender))
 print(gender_other_search)</code></pre>
 <pre><code>## [1] 0</code></pre>
@@ -487,12 +483,12 @@ coeficiente de variação separado por gênero. Segue que</p>
     CV_diabetes = dp_diabetes/media_diabetes,
     N = n()
   )
-head(dados_dicotomicos_exploration)</code></pre>
+(dados_dicotomicos_exploration)</code></pre>
 <pre><code>## # A tibble: 2 × 11
 ##   gender media…¹ media…² media…³ dp_hy…⁴ dp_he…⁵ dp_di…⁶ CV_hy…⁷ CV_he…⁸ CV_di…⁹
 ##   &lt;chr&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-## 1 Female  0.0912  0.0313  0.0954   0.288   0.174   0.294    3.16    5.56    3.08
-## 2 Male    0.108   0.0712  0.132    0.311   0.257   0.338    2.87    3.61    2.57
+## 1 Female  0.0717  0.0267  0.0762   0.258   0.161   0.265    3.60    6.04    3.48
+## 2 Male    0.0794  0.0574  0.0975   0.270   0.233   0.297    3.41    4.05    3.04
 ## # … with 1 more variable: N &lt;int&gt;, and abbreviated variable names
 ## #   ¹​media_hypertension, ²​media_heart_desease, ³​media_diabetes,
 ## #   ⁴​dp_hypertension, ⁵​dp_heart_desease, ⁶​dp_diabetes, ⁷​CV_hypertension,
@@ -515,9 +511,9 @@ dados_dicotomicos_male &lt;- dados_dicotomicos %&gt;% filter(gender == &quot;Mal
   cor()
 (dados_dicotomicos_female_correlation)</code></pre>
 <pre><code>##               hypertension heart_disease  diabetes
-## hypertension     1.0000000     0.1145914 0.1957218
-## heart_disease    0.1145914     1.0000000 0.1650234
-## diabetes         0.1957218     0.1650234 1.0000000</code></pre>
+## hypertension     1.0000000     0.1154715 0.1992073
+## heart_disease    0.1154715     1.0000000 0.1625962
+## diabetes         0.1992073     0.1625962 1.0000000</code></pre>
 <p>E, para o gênero masculino,</p>
 <pre class="r"><code>dados_dicotomicos_male_correlation &lt;- dados_dicotomicos_male %&gt;% 
   select_if(is.numeric) %&gt;% 
@@ -525,9 +521,9 @@ dados_dicotomicos_male &lt;- dados_dicotomicos %&gt;% filter(gender == &quot;Mal
   cor()
 (dados_dicotomicos_male_correlation)</code></pre>
 <pre><code>##               hypertension heart_disease  diabetes
-## hypertension     1.0000000     0.1190299 0.1854155
-## heart_disease    0.1190299     1.0000000 0.1680429
-## diabetes         0.1854155     0.1680429 1.0000000</code></pre>
+## hypertension     1.0000000     0.1282172 0.1955127
+## heart_disease    0.1282172     1.0000000 0.1779883
+## diabetes         0.1955127     0.1779883 1.0000000</code></pre>
 <p>Dadas as matrizes de correlação, podemos verificar, para ambos os
 gêneros, que as correlações entre as variáveis são relativamente baixas,
 sendo ligeiramente superior a relação entre diabetes e hipertensão.
