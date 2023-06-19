@@ -102,3 +102,28 @@ head(dados_dicotomicos_exploration)
 
 Como resultados preliminares desta primeira análise, podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
 
+Considerando ainda as informções do conjunto de dados dicotômicos, podemos verificar a correlação entre as variáveis, para estabelecer uma relação de diabetes com hipertensão e doença cardíaca. Faremos a análise por gênero, então iniciamos separando os dois grupos
+
+```{r}
+dados_dicotomicos_female <- dados_dicotomicos %>% filter(gender == "Female")
+dados_dicotomicos_male <- dados_dicotomicos %>% filter(gender == "Male")
+```
+
+Para o gênero feninino temos
+```{r}
+dados_dicotomicos_female_correlation <- dados_dicotomicos_female %>% 
+  select_if(is.numeric) %>% 
+  filter(complete.cases(.)) %>% 
+  cor()
+(dados_dicotomicos_female_correlation)
+```
+E, para o gênero masculino,
+```{r}
+dados_dicotomicos_male_correlation <- dados_dicotomicos_male %>% 
+  select_if(is.numeric) %>% 
+  filter(complete.cases(.)) %>% 
+  cor()
+(dados_dicotomicos_male_correlation)
+```
+
+Dadas as matrizes de correlação, podemos verificar, para ambos os gêneros, que as correlações entre as variáveis são relativamente baixas, sendo ligeiramente superior a relação entre diabetes e hipertensão. Entre os gêneros, é possível observar que a relação diabetes-hipertensão é maior para o feminino, enquanto a relação diabetes-doença cardíaca é maior para o masculino.
