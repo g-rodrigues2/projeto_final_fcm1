@@ -57,22 +57,47 @@ As variáveis podem ser divididas em dois grupos: numéricas e categóricas.
 
 # Análise descritiva considerando as variáveis categóricas
 
-Nesta primeira rodada de análises descritivas vamos mostrar alguns resultados acerca dos dados dicotomizados presentes no *dataset*, isto é, 0 para a ausência e 1 para a presença de determinada doença.
-
-Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease, diabetes*. A filtragem foi realizada da seguinte forma:
+Nesta primeira rodada de análises descritivas vamos mostrar alguns resultados acerca dos dados dicotomizados presentes no *dataset*, isto é, 0 para a ausência e 1 para a presença de determinada doença. Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease, diabetes*. A filtragem foi realizada da seguinte forma:
 
 ```{r}
 dados_dicotomicos <- dados %>% select(gender, hypertension, heart_disease, diabetes)
 head(dados_dicotomicos)
+
+nrow(dados_dicotomicos)
 ```
-No conjunto de dados, notamos que alguns pacientes informaram o gênero como *Others*. Analisaremos os dados de saúde dessa população em específico. Segue que
+
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo.
+
+```{r}
+theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
+                                             axis.title.x = element_text(face = "bold"),
+                                             axis.title.y = element_text(face = "bold"),
+                                             legend.title = element_text(face = "bold"),
+                                             legend.text = element_text(face = "bold")))
+
+ggplot(dados, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  scale_fill_manual(values = c("#E69F00", "#56B4E9", "black"), labels = c("Feminino", "Masculino", "Outros")) +
+  labs(title = "Distribuição da Variável Gênero") +
+  xlab("Gênero") +
+  ylab("Contagem") +
+  scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
+  theme(legend.title = element_blank())
+
+```
+```{r}
+contagem_genero <- table(dados$gender)
+contagem_genero
+```
+
+Como observado no gráfico de barras acima, 18 pacientes informaram o gênero como *Others*. Para dar andamento as análises desta seção, analisaremos os dados de saúde desta população em específico, ou seja, os dados sobre hipertensão, doenças cardíacas e diabetes. Segue que,
 
 ```{r}
 (dados_dicotomicos %>% filter(gender == "Other"))
 
 ```
 
-Dos mais de 64 mil pacientes, 18 pacientes se identificam com outro gênero e nenhum deles apresentou alguma das três doenças analisadas neste primeiro momento. Portanto, os excluímos desta primeira análise.
+Como observado na Tabela acima, nenhum dos indivíduos que declararam o gênero como *Other* apresentou alguma das três doenças analisadas neste primeiro momento. Portanto, os excluímos desta primeira análise.
 
 ```{r}
 dados_dicotomicos_others <- dados_dicotomicos %>% filter(gender != "Other")
@@ -103,7 +128,7 @@ dados_dicotomicos_exploration <- dados_dicotomicos_others %>%
 (dados_dicotomicos_exploration)
 ```
 
-Como resultados preliminares desta primeira análise, podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
+Como resultados desta primeira análise, podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
 
 Considerando ainda as informções do conjunto de dados dicotômicos, podemos verificar a correlação entre as variáveis, para estabelecer uma relação de diabetes com hipertensão e doença cardíaca. Faremos a análise por gênero, então iniciamos separando os dois grupos
 
@@ -153,12 +178,12 @@ Dadas as matrizes de correlação, podemos verificar, para ambos os gêneros, qu
 
 A última variável categórica a ser considerada é o histórico de tabagismo, que é classificado como:
 
-* "Never": indivíduos que nunca fumaram;
-* "Former": indivíduos que fumavam mas estão em abstinência há muito tempo
-* "Not current": indivíduos que costumavam fumar, mas atualmente não fumam
-* "Ever": indivíduos que já foram fumantes;
-* "Current": indivíduos que fumam atualmente;
-* "No info": indivíduos cujo histórico de tabagismo é desconhecido.
+* "*Never*": indivíduos que nunca fumaram;
+* "*Former*": indivíduos que fumavam mas estão em abstinência há muito tempo
+* "*Not current*": indivíduos que costumavam fumar, mas atualmente não fumam
+* "*Ever*": indivíduos que já foram fumantes;
+* "*Current*": indivíduos que fumam atualmente;
+* "*No info*": indivíduos cujo histórico de tabagismo é desconhecido.
 
 ```{r}
 dados_smoking <- dados %>% select(gender, smoking_history, diabetes)
@@ -169,7 +194,7 @@ dados_smoking %>%
              fill = smoking_history)) +
     geom_bar(stat="count") +
     geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black") +
-    labs(title = "Distribuição do histórico de tabagismo", x = "", y = "Contagem")+
+    labs(title = "Distribuicao do historico de tabagismo", x = "", y = "Contagem")+
     scale_fill_manual(values = rcartocolor::carto_pal(6,"Safe"),
                       breaks = c("never", "former", "not current", "ever", "current", "No Info"), 
                       label = c("Never", "Former", "Not current", "Ever", "Current", "No info"),
@@ -218,10 +243,15 @@ dados_smoking_info %>%
 ```{r}
 # Pensar em como fazer uma correlação do tabagismo com a diabetes!!!
 
-
 ```
+
+
 
 (comentário sobre a relação entre tabagismo e diabetes)
 
 
 # Análise descritiva considerando as variáveis numéricas
+
+
+
+
