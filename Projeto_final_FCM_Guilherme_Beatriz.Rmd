@@ -19,10 +19,11 @@ A análise descritiva desses dados, considerando estatísticas básicas, distrib
 
 Vamos carregar as bibliotecas:
 
-```{r}
+```{r, message=FALSE}
 library(ggplot2)
 library(tidyr)
 library(dplyr)
+library(rcartocolor)
 ```
 
 Chamando o conjunto de dados, temos:
@@ -33,18 +34,30 @@ head(dados)
 
 ```
 
-Avaliando a quantidade de linhas, ou seja, de pacientes:
 ```{r}
 nrow(dados) 
 ```
 
 O conjunto de dados de previsão de diabetes disponível em <https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset?select=diabetes_prediction_dataset.csv> consiste em uma compilação de informações médicas e demográficas de 100 mil pacientes (100 mil linhas), acompanhadas da condição de diabetes (1 para a presença de diabetes e 0 para ausência de diabetes). Os atributos abrangem uma variedade de características, incluindo idade, gênero, índice de massa corporal (IMC), hipertensão, doenças cardíacas, histórico de tabagismo, nível de HbA1c (hemoglobina glicada) e nível de glicose no sangue. 
 
-## Análise descritiva considerando apenas os dados dicotomizados
+As variáveis podem ser divididas em dois grupos: numéricas e categóricas.
 
-Nesta primeira rodada de análises descritivas vamos mostrar alguns resultados acerca dos dados dicotomizados presentes no *dataset*, isto é, 0 para a presença e 1 para a ausência de determinada doença. Desse modo, podemos utilizar a distribuição de Bernoulli dada por
-\[f(k;p)=p^k(1-p)^{1-k}, \text{ para }k\in{0,1}.\]
-Sabemos que o valor esperado de uma variável aleatória de Bernoulli $X$ é $E(X)=p$ e a variância é dada por $Var(X)=p(1-p)$.
+* Variáveis numéricas:
+    + idade
+    + IMC
+    + nível de HbA1c
+    + nível de glicose no sangue
+    
+* Variáveis categóricas:
+    + gênero
+    + hipertensão
+    + doenças cardíacas
+    + histórico de tabagismo
+    + diabetes
+
+# Análise descritiva considerando as variáveis categóricas
+
+Nesta primeira rodada de análises descritivas vamos mostrar alguns resultados acerca dos dados dicotomizados presentes no *dataset*, isto é, 0 para a ausência e 1 para a presença de determinada doença.
 
 Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease, diabetes*. A filtragem foi realizada da seguinte forma:
 
@@ -52,28 +65,28 @@ Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension
 dados_dicotomicos <- dados %>% select(gender, hypertension, heart_disease, diabetes)
 head(dados_dicotomicos)
 ```
-No conjunto de dados dicotômicos, notamos que alguns pacientes informaram o gênero como *Others*. Para evitar divisão por zero no cálculo dos coeficientes de variação, analisamos os dados de saude dessa população em específico. Segue que
+No conjunto de dados, notamos que alguns pacientes informaram o gênero como *Others*. Analisaremos os dados de saúde dessa população em específico. Segue que
 
 ```{r}
 (dados_dicotomicos %>% filter(gender == "Other"))
 
 ```
 
-Dos mais de 64 mil pacientes, 18 pacientes se identificaram com outro gênero e nenhum deles apresentou alguma das três doenças analisadas neste primeiro momento. Portanto, os excluímos desta primeira análise. Segue que
+Dos mais de 64 mil pacientes, 18 pacientes se identificam com outro gênero e nenhum deles apresentou alguma das três doenças analisadas neste primeiro momento. Portanto, os excluímos desta primeira análise.
 
 ```{r}
-dados_dicotomicos_gender_others <- dados_dicotomicos %>% filter(gender != "Other")
+dados_dicotomicos_others <- dados_dicotomicos %>% filter(gender != "Other")
 ```
 
 Para avaliar se os pacientes saíram do banco de dados podemos utilizar o comando *grepl*:
 ```{r}
-gender_other_search <- sum(grepl("Other", dados_dicotomicos_gender_others$gender))
+gender_other_search <- sum(grepl("Other", dados_dicotomicos_others$gender))
 print(gender_other_search)
 ```
-Agora, com a garantia de que não ocorrerá divisão por zero no cálculo dos coeficientes de variação, dado que os pacientes que declaram seu gênero como *Others* não possuem nenhuma das doenças analisadas aqui, podemos extrair algumas informações de média, desvio padrão e coeficiente de variação separado por gênero. Segue que
+Agora, dado que os pacientes que declaram seu gênero como *Others* não possuem nenhuma das doenças analisadas aqui, podemos extrair algumas informações de média, desvio padrão e coeficiente de variação separado por gênero. Segue que
 
 ```{r}
-dados_dicotomicos_exploration <- dados_dicotomicos_gender_others %>%
+dados_dicotomicos_exploration <- dados_dicotomicos_others %>%
   group_by(gender) %>%
   summarise(
     media_hypertension=mean(hypertension),
@@ -99,21 +112,116 @@ dados_dicotomicos_female <- dados_dicotomicos %>% filter(gender == "Female")
 dados_dicotomicos_male <- dados_dicotomicos %>% filter(gender == "Male")
 ```
 
-Para o gênero feninino temos
+Para o gênero feminino temos
 ```{r}
-dados_dicotomicos_female_correlation <- dados_dicotomicos_female %>% 
+dados_dicotomicos_female_cor <- dados_dicotomicos_female %>% 
   select_if(is.numeric) %>% 
   filter(complete.cases(.)) %>% 
   cor()
-(dados_dicotomicos_female_correlation)
+(dados_dicotomicos_female_cor)
+
+#heatmap correlção
+#  dados_dicotomicos_female_cor %>% 
+#    reshape2::melt() %>% 
+#    ggplot(aes(x = Var1, y = Var2, fill = value,label = round(value, 3))) +
+#    geom_tile(color = "white") +
+#    geom_text(color = "black", size = 3) +
+#    labs(title = "Correlação - Feminino",x="",y="")+
+#    scale_fill_viridis_c() +
+#    theme_minimal()
 ```
 E, para o gênero masculino,
 ```{r}
-dados_dicotomicos_male_correlation <- dados_dicotomicos_male %>% 
+dados_dicotomicos_male_cor <- dados_dicotomicos_male %>% 
   select_if(is.numeric) %>% 
   filter(complete.cases(.)) %>% 
   cor()
-(dados_dicotomicos_male_correlation)
+(dados_dicotomicos_male_cor)
+
+#heatmap correlção
+#  dados_dicotomicos_male_cor %>% 
+#    reshape2::melt() %>% 
+#    ggplot(aes(x = Var1, y = Var2, fill = value,label = round(value, 3))) +
+#    geom_tile(color = "white") +
+#    geom_text(color = "black", size = 3) +
+#    labs(title = "Correlação - Masculino",x="",y="")+
+#    scale_fill_viridis_c() +
+#    theme_minimal()
 ```
 
 Dadas as matrizes de correlação, podemos verificar, para ambos os gêneros, que as correlações entre as variáveis são relativamente baixas, sendo ligeiramente superior a relação entre diabetes e hipertensão. Entre os gêneros, é possível observar que a relação diabetes-hipertensão é maior para o feminino, enquanto a relação diabetes-doença cardíaca é maior para o masculino.
+
+A última variável categórica a ser considerada é o histórico de tabagismo, que é classificado como:
+
+* "Never": indivíduos que nunca fumaram;
+* "Former": indivíduos que fumavam mas estão em abstinência há muito tempo
+* "Not current": indivíduos que costumavam fumar, mas atualmente não fumam
+* "Ever": indivíduos que já foram fumantes;
+* "Current": indivíduos que fumam atualmente;
+* "No info": indivíduos cujo histórico de tabagismo é desconhecido.
+
+```{r}
+dados_smoking <- dados %>% select(gender, smoking_history, diabetes)
+
+dados_smoking %>% 
+  ggplot(aes(x = factor(smoking_history, 
+                        levels = c("never", "former", "not current", "ever", "current", "No Info")), 
+             fill = smoking_history)) +
+    geom_bar(stat="count") +
+    geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black") +
+    labs(title = "Distribuição do histórico de tabagismo", x = "", y = "Contagem")+
+    scale_fill_manual(values = rcartocolor::carto_pal(6,"Safe"),
+                      breaks = c("never", "former", "not current", "ever", "current", "No Info"), 
+                      label = c("Never", "Former", "Not current", "Ever", "Current", "No info"),
+                      name = "Histórico")+
+    scale_x_discrete(label = c("Never", "Former", "Not current", "Ever", "Current", "No info"))+
+    theme_minimal()
+```
+
+Podemos notar que há um grande número de indivíduos sem informação do histórico de tabagismo, o que pode interferir na precisão de alguns resultados. Para um cálculo de correlação do histórico de tabagismo com o diagnóstico de diabetes, vamos desconsiderar os indivíduos que não apresentam esta informação e agrupar os demais como "não fumante", "fumante" e "ex-fumante".
+
+```{r}
+dados_smoking_info <- dados_smoking %>%
+  filter(smoking_history != "No Info") %>% 
+  mutate(smoking_history_redef = case_when(smoking_history == "never" ~ "non-smoker",
+                                           smoking_history == "current" ~ "current",
+                                           smoking_history %in% c("former", "ever", "not current") ~ "past smoker")
+  )
+
+dados_smoking_info %>% 
+  ggplot(aes(x = "", fill = smoking_history_redef)) +
+    geom_bar(width = 1) +
+    coord_polar("y")+
+    geom_text(stat = "count", aes(label = after_stat(count)), position = position_stack(vjust = 0.5), color = "black") +
+    labs(title = "Nova distribuição do histórico de tabagismo", x = "", y = "")+
+    scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe"),
+                      breaks = c("non-smoker", "current", "past smoker"), 
+                      label = c("Não fumante", "Fumante", "Ex-fumante"),
+                      name = "Histórico")+
+    theme_minimal()
+
+# outra opção - gráfico de barras
+#dados_smoking_info %>% 
+#  ggplot(aes(x = factor(smoking_history_redef, levels = c("non-smoker", "current", "past smoker")), 
+#             fill = smoking_history_redef)) +
+#    geom_bar(stat="count") +
+#    geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black") +
+#    labs(title = "Distribuição do histórico de tabagismo", x = "", y = "Contagem")+
+#    scale_fill_manual(values = rcartocolor::carto_pal(6,"Safe"),
+#                      breaks = c("non-smoker", "current", "past smoker"), 
+#                      label = c("Não fumante", "Fumante", "Ex-fumante"),
+#                      name = "Histórico")+
+#    scale_x_discrete(label = c("Não fumante", "Fumante", "Ex-fumante"))+
+#    theme_minimal()
+```
+
+```{r}
+# Pensar em como fazer uma correlação do tabagismo com a diabetes!!!
+
+
+```
+
+(comentário sobre a relação entre tabagismo e diabetes)
+
+
+# Análise descritiva considerando as variáveis numéricas
