@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introdução
 
-O conjunto de dados *Diabetes Prediction* é uma coleção de informações relacionadas a pacientes submetidos a testes médicos para avaliar a possibilidade de desenvolver diabetes. Esses dados podem ser utilizados para realizar análises descritivas e exploratórias visando compreender melhor os fatores associados à doença.
+O conjunto de dados *Diabetes Prediction* disponível em <https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset?select=diabetes_prediction_dataset.csv> consiste em uma compilação de informações médicas e demográficas de 100 mil pacientes. Esses dados podem ser utilizados para realizar análises descritivas e exploratórias visando compreender melhor os fatores associados à doença.
 
 A análise descritiva desses dados, considerando estatísticas básicas, distribuições, relações entre variáveis e comparação entre grupos, pode auxiliar na compreensão de fatores relacionados ao desenvolvimento da doença. Além disso, essas análises podem auxiliar no desenvolvimento de estratégias de prevenção e tratamento mais eficazes para o diabetes.
 
@@ -31,16 +31,15 @@ Chamando o conjunto de dados, temos:
 ```{r}
 dados <- read.csv("./diabetes_prediction_dataset.csv")
 head(dados)
-
 ```
 
 ```{r}
 nrow(dados) 
 ```
 
-O conjunto de dados de previsão de diabetes disponível em <https://www.kaggle.com/datasets/iammustafatz/diabetes-prediction-dataset?select=diabetes_prediction_dataset.csv> consiste em uma compilação de informações médicas e demográficas de 100 mil pacientes (100 mil linhas), acompanhadas da condição de diabetes (1 para a presença de diabetes e 0 para ausência de diabetes). Os atributos abrangem uma variedade de características, incluindo idade, gênero, índice de massa corporal (IMC), hipertensão, doenças cardíacas, histórico de tabagismo, nível de HbA1c (hemoglobina glicada) e nível de glicose no sangue. 
+Acompanhados da condição de diabetes (1 para a presença e 0 para ausência), os atributos abrangem uma variedade de características, incluindo idade, gênero, índice de massa corporal (IMC), hipertensão, doenças cardíacas, histórico de tabagismo, nível de HbA1c (hemoglobina glicada) e nível de glicose no sangue. 
 
-As variáveis podem ser divididas em dois grupos: numéricas e categóricas.
+As variáveis podem ser divididas em numéricas e categóricas.
 
 * Variáveis numéricas:
     + idade
@@ -55,64 +54,82 @@ As variáveis podem ser divididas em dois grupos: numéricas e categóricas.
     + histórico de tabagismo
     + diabetes
 
-Resumo estatístico dos dados
-
-```{r}
-summary(dados)
-```
 
 Exibindo informações do *dataframe*:
 ```{r}
-str(dados)
+str(sapply(dados, unique))
+
 ```
+Como alguams variáveis são categóricas, primeiramente vamos fazer uma conversão da representação dessas variáveis, para então fazermos um resumo estatístico dos dados:
+```{r}
+dados %>%
+  mutate(
+    gender = factor(gender),
+    hypertension = factor(hypertension),
+    heart_disease = factor(heart_disease),
+    smoking_history = factor(smoking_history),
+    diabetes = factor(diabetes)
+  ) %>% 
+  summary()
+```
+
 # Primeiras análises descritivas dos dados
 
 Vamos fazer uma análise individual das variáveis do *dataframe*
 
-* Com relação a variável diabetes, temos
+```{r}
+# Definindo um tema padrão para os gráficos das análises
+theme_set(theme_minimal(base_size = 12) + theme(text = element_text(face = "bold"),
+                                             axis.title.x = element_text(face = "bold"),
+                                             axis.title.y = element_text(face = "bold"),
+                                             legend.title = element_text(face = "bold"),
+                                             legend.text = element_text(face = "bold"),
+                                             plot.title = element_text(hjust = 0.5)))
+```
+
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo.
 
 ```{r}
-contagem_diabetes <- table(dados$diabetes)
-
-contagem_diabetes
+dados %>% 
+  ggplot(aes(x = gender, fill = gender)) +
+    geom_bar() +
+    geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")+
+    scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe"),
+                      breaks = c("Female","Male","Others"),
+                      labels = c("Feminino", "Masculino", "Outros")) +
+    labs(title = "Contagem por Gênero") +
+    xlab("Gênero") +
+    ylab("Contagem") +
+    scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
+    theme(legend.title = element_blank())
 
 ```
-Os resultados indicam que, dos 100 mil pacientes, apenas 8500 sofrem de diabetes. O gráfico de barras deixa isso evidente:
+
+* Com relação a variável *diabetes*, temos que, dos 100 mil pacientes, apenas 8500 possuem diabetes.
 
 ```{r}
 contagem_diabetes <- dados %>%
   count(diabetes) %>%
   mutate(diabetes = factor(diabetes, labels = c("Não", "Sim")))
 
-theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
-                                             axis.title.x = element_text(face = "bold"),
-                                             axis.title.y = element_text(face = "bold"),
-                                             legend.title = element_text(face = "bold"),
-                                             legend.text = element_text(face = "bold")))
-
-ggplot(contagem_diabetes, aes(x = diabetes, y = n, fill = diabetes)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("orange", "blue")) +  # Substitua pelas cores desejadas
-  labs(title = "Contagem por Diabetes", x = "Diabetes", y = "Contagem")+
-  theme(legend.title = element_blank())
+contagem_diabetes %>% 
+  ggplot(aes(x = diabetes, y = n, fill = diabetes)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = n), vjust = -0.5, color = "black") +
+    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    labs(title = "Contagem por Diabetes", x = "Diabetes", y = "Contagem")+
+    theme(legend.title = element_blank())
 ```
 
 
-* Com relação a variável *smoking_history*, que apresenta as informações acerca de pacientes que fazem uso de tabaco, temos
+* Com relação a variável *smoking_history*, que apresenta as informações acerca do uso de tabaco, temos a classificação:
 
-```{r}
-contagem_tabagismo <- table(dados$smoking_history)
-
-contagem_tabagismo
-```
-As categorias relacionadas a esta variável são dadas por:
-
-* "*Never*": indivíduos que nunca fumaram;
-* "*Former*": indivíduos que fumavam mas estão em abstinência há muito tempo
-* "*Not current*": indivíduos que costumavam fumar, mas atualmente não fumam
-* "*Ever*": indivíduos que já foram fumantes;
-* "*Current*": indivíduos que fumam atualmente;
-* "*No info*": indivíduos cujo histórico de tabagismo é desconhecido.
+  + "*Never*": indivíduos que nunca fumaram;
+  + "*Former*": indivíduos que fumavam mas estão em abstinência há muito tempo
+  + "*Not current*": indivíduos que costumavam fumar, mas atualmente não fumam
+  + "*Ever*": indivíduos que já foram fumantes;
+  + "*Current*": indivíduos que fumam atualmente;
+  + "*No info*": indivíduos cujo histórico de tabagismo é desconhecido.
 
 
 ```{r}
@@ -130,58 +147,40 @@ dados_smoking %>%
                       label = c("Never", "Former", "Not current", "Ever", "Current", "No info"),
                       name = "Histórico")+
     scale_x_discrete(label = c("Never", "Former", "Not current", "Ever", "Current", "No info"))+
-    theme_minimal()
+    theme(legend.title = element_blank())
 ```
 
-* Com relação a variável *hypertension*, que apresenta as informações acerca de pacientes com hipertensão, temos
+* Com relação a variável *hypertension*, que apresenta as informações acerca de pacientes com hipertensão, temos que 7485 possuem tal condição.
 
-```{r}
-contagem_hipertensao <- table(dados$hypertension)
 
-contagem_hipertensao
-
-```
 ```{r}
 contagem_hipertensao <- dados %>%
   count(hypertension) %>%
   mutate(hypertension = factor(hypertension, labels = c("Não", "Sim")))
 
-theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
-                                             axis.title.x = element_text(face = "bold"),
-                                             axis.title.y = element_text(face = "bold"),
-                                             legend.title = element_text(face = "bold"),
-                                             legend.text = element_text(face = "bold")))
-
-ggplot(contagem_hipertensao, aes(x = hypertension, y = n, fill = hypertension)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("orange", "blue")) +
-  labs(title = "Contagem por Hipertensão", x = "Hipertensão", y = "Contagem")+
-  theme(legend.title = element_blank())
+contagem_hipertensao %>% 
+  ggplot(aes(x = hypertension, y = n, fill = hypertension)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = n), vjust = -0.5, color = "black") +
+    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    labs(title = "Contagem por Hipertensão", x = "Hipertensão", y = "Contagem")+
+    theme(legend.title = element_blank())
 ```
 
-* Com relação a variável *heart_desease*, que apresenta as informações acerca de pacientes com doenças cardíacas, temos
+* Com relação a variável *heart_desease*, que apresenta as informações acerca de pacientes com doenças cardíacas, temos que 3942 deles possuem alguma doença.
 
-```{r}
-contagem_doencacardiaca <- table(dados$heart_disease)
-
-contagem_doencacardiaca
-```
 ```{r}
 contagem_doencacardiaca <- dados %>%
   count(heart_disease) %>%
   mutate(heart_disease = factor(heart_disease, labels = c("Não", "Sim")))
 
-theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
-                                             axis.title.x = element_text(face = "bold"),
-                                             axis.title.y = element_text(face = "bold"),
-                                             legend.title = element_text(face = "bold"),
-                                             legend.text = element_text(face = "bold")))
-
-ggplot(contagem_doencacardiaca, aes(x = heart_disease, y = n, fill = heart_disease)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = c("orange", "blue")) +
-  labs(title = "Contagem por Doença Cardíaca", x = "Doença Cardíaca", y = "Contagem")+
-  theme(legend.title = element_blank())
+contagem_doencacardiaca %>% 
+  ggplot(aes(x = heart_disease, y = n, fill = heart_disease)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = n), vjust = -0.5, color = "black") +
+    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    labs(title = "Contagem por Doença Cardíaca", x = "Doença Cardíaca", y = "Contagem")+
+    theme(legend.title = element_blank())
 ```
 
 # Análise descritiva considerando as variáveis categóricas
@@ -200,38 +199,16 @@ Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension
 dados_dicotomicos <- dados %>% select(gender, hypertension, heart_disease, diabetes)
 head(dados_dicotomicos)
 
-nrow(dados_dicotomicos)
 ```
 
-Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo.
-
-```{r}
-theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
-                                             axis.title.x = element_text(face = "bold"),
-                                             axis.title.y = element_text(face = "bold"),
-                                             legend.title = element_text(face = "bold"),
-                                             legend.text = element_text(face = "bold")))
-
-ggplot(dados, aes(x = gender, fill = gender)) +
-  geom_bar() +
-  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")+
-  scale_fill_manual(values = c("orange", "blue", "black"), labels = c("Feminino", "Masculino", "Outros")) +
-  labs(title = "Distribuição da Variável Gênero") +
-  xlab("Gênero") +
-  ylab("Contagem") +
-  scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
-  theme(legend.title = element_blank())
-
-```
-
-Como observado no gráfico de barras acima, 18 pacientes informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento das análises como, por exemplo, nos cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, ou seja, os dados sobre hipertensão, doenças cardíacas e diabetes. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
+Como observado acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
 
 ```{r}
 (dados_dicotomicos %>% filter(gender == "Other"))
 
 ```
 
-Como observado na Tabela acima, nenhum dos indivíduos que declararam o gênero como *Other* apresentou alguma das três doenças analisadas neste primeiro momento. Desse modo, para evitar problemas como divisão por zero nos cálculos, excluímos estes 18 indivíduos por meio da filtragem, isto é
+Nenhum dos indivíduos que se identificam como *Outro* gênero apresentou alguma das três condições analisadas neste primeiro momento. Desse modo, para evitar problemas como divisão por zero nos cálculos, excluímos estes 18 indivíduos por meio da filtragem, isto é
 
 ```{r}
 dados_dicotomicos_others <- dados_dicotomicos %>% filter(gender != "Other")
@@ -265,38 +242,68 @@ dados_dicotomicos_exploration <- dados_dicotomicos_others %>%
 (dados_dicotomicos_exploration)
 ```
 
+Podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
 
-Como resultados desta primeira análise, podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
-
-Considerando ainda as informações do conjunto de dados dicotômicos, podemos verificar a correlação entre as variáveis, para estabelecer uma relação de diabetes com hipertensão e doença cardíaca. Faremos a análise por gênero, então iniciamos separando os dois grupos
-
+Realizando uma análise de relação entre a incidência de diabetes em indivíduos com hipertensão
 ```{r}
-dados_dicotomicos_female <- dados_dicotomicos %>% filter(gender == "Female")
-dados_dicotomicos_male <- dados_dicotomicos %>% filter(gender == "Male")
+dados_dicotomicos %>%
+  group_by(hypertension, diabetes) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count)) %>% 
+  ggplot(aes(x = factor(hypertension), y = prop, fill = factor(diabetes))) +
+    geom_col(position = "dodge") +
+    labs(title = "Relação hipertensão-diabetes", 
+         x = "Hipertensão", y = "Proporção", fill = "Diabetes") +
+    scale_fill_manual(values = rcartocolor::carto_pal(4,"Safe"), labels = c("Não", "Sim")) +
+    scale_x_discrete(labels = c("Não", "Sim"), breaks = c(0, 1)) +
+    geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
+    theme()
 ```
 
-Para o gênero feminino temos
+E agora para a relação com doenças cardíacas:
 ```{r}
-dados_dicotomicos_female_cor <- dados_dicotomicos_female %>% 
-  select_if(is.numeric) %>% 
-  filter(complete.cases(.)) %>% 
-  cor()
-(dados_dicotomicos_female_cor)
-
+dados_dicotomicos %>%
+  group_by(heart_disease, diabetes) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count)) %>% 
+  ggplot(aes(x = factor(heart_disease), y = prop, fill = factor(diabetes))) +
+    geom_col(position = "dodge") +
+    labs(title = "Relação doença cardíaca-diabetes", 
+         x = "Doença cardíaca", y = "Proporção", fill = "Diabetes") +
+    scale_fill_manual(values = rcartocolor::carto_pal(4,"Safe"), labels = c("Não", "Sim")) +
+    scale_x_discrete(labels = c("Não", "Sim"), breaks = c(0, 1)) +
+    geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
+    theme()
 ```
-E, para o gênero masculino,
+Assim, percebemos que pessoas hipertensas e/ou com doenças cardíacas são mais propensaas a ter diabetes do que aquelas que não possuem tais condições.
+
+Realizando esta mesma análise com as informações de tabagismo, agrupando os indivíduos como os que nunca fumaram, os que já fumaram no passado e os que fumam atualmente
+
 ```{r}
-dados_dicotomicos_male_cor <- dados_dicotomicos_male %>% 
-  select_if(is.numeric) %>% 
-  filter(complete.cases(.)) %>% 
-  cor()
-(dados_dicotomicos_male_cor)
+dados_smoking <- dados %>%
+  filter(smoking_history != "No Info") %>% 
+  mutate(smoking_history_redef = case_when(smoking_history == "never" ~ "non-smoker",
+                                           smoking_history == "current" ~ "current",
+                                           smoking_history %in% c("former", "ever", "not current") ~ "past smoker"))
+dados_smoking %>%
+  group_by(smoking_history_redef, diabetes) %>%
+  summarise(count = n()) %>%
+  mutate(prop = count / sum(count)) %>% 
+  ggplot(aes(x = factor(smoking_history_redef, levels = c("non-smoker", "current", "past smoker")),
+             y = prop, fill = factor(diabetes))) +
+    geom_col(position = "dodge") +
+    labs(title = "Relação tabagismo-diabetes", 
+         x = "Histórico de tabagismo", y = "Proporção", fill = "Diabetes") +
+    scale_fill_manual(values = rcartocolor::carto_pal(6,"Safe"), labels = c("Não", "Sim")) +
+    scale_x_discrete(breaks = c("non-smoker", "current", "past smoker"), 
+                    label = c("Não fumante", "Fumante", "Ex-fumante")) +
+    geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
+    theme()
 ```
 
-Dadas as matrizes de correlação, podemos verificar, para ambos os gêneros, que as correlações entre as variáveis são relativamente baixas, sendo ligeiramente superior a relação entre diabetes e hipertensão. Entre os gêneros, é possível observar que a relação diabetes-hipertensão é maior para o feminino, enquanto a relação diabetes-doença cardíaca é maior para o masculino.
+A relação do histórico de tabagismo com o diagnóstico de diabetes é muito sutil, sendo levemente maior para aqueles que fumaram no passado.
 
-
-# Análise descritiva considerando todas as variáveis
+# Análise descritiva considerando as variáveis numéricas
 
 Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que
 
