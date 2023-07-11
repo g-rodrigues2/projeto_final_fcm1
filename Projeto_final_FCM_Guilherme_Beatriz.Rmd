@@ -307,4 +307,24 @@ A relação do histórico de tabagismo com o diagnóstico de diabetes é muito s
 
 Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que
 
+# Correlação
+
+```{r}
+dados %>%
+  select(age, hypertension, heart_disease, bmi, HbA1c_level, blood_glucose_level, diabetes) %>%
+  cor() %>%
+  as.data.frame() %>%
+  tibble::rownames_to_column(var = "Variable") %>%
+  filter(Variable == "diabetes") %>%
+  pivot_longer(cols = -Variable, names_to = "Variable2", values_to = "Correlation") %>%
+  mutate(Variable2 = reorder(Variable2, Correlation)) %>%
+  ggplot(aes(Variable, Variable2, fill = Correlation)) +
+  geom_tile() +
+  geom_text(aes(label = round(Correlation, 4)), color = "black", size = 3) +
+  labs(title = "Correlação com a variável Diabetes",
+       x = "", y = "", fill = "Correlação") +
+  scale_fill_gradient2(low = "#3C61A0", mid = "#F7F7F7", high = "#CC6677", midpoint = 0) +
+  theme()
+
+```
 
