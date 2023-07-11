@@ -201,6 +201,28 @@ head(dados_dicotomicos)
 
 ```
 
+
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo.
+
+```{r}
+theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
+                                             axis.title.x = element_text(face = "bold"),
+                                             axis.title.y = element_text(face = "bold"),
+                                             legend.title = element_text(face = "bold"),
+                                             legend.text = element_text(face = "bold")))
+
+ggplot(dados, aes(x = gender, fill = gender)) +
+  geom_bar() +
+  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")+
+  scale_fill_manual(values = c("orange", "blue", "black"), labels = c("Feminino", "Masculino", "Outros")) +
+  labs(title = "Distribuição da Variável Gênero") +
+  xlab("Gênero") +
+  ylab("Contagem") +
+  scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
+  theme(legend.title = element_blank())
+
+```
+
 Como observado acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
 
 ```{r}
@@ -306,6 +328,64 @@ A relação do histórico de tabagismo com o diagnóstico de diabetes é muito s
 # Análise descritiva considerando as variáveis numéricas
 
 Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que (...)
+
+# Análise descritiva considerando todas as variáveis
+
+Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que
+
+```{r}
+# Histograma
+ggplot(dados, aes(x = age)) +
+  geom_histogram(binwidth = 9, fill = "lightblue", color = "black") +
+  labs(x = "Idade", y = "Contagem") +
+  ggtitle("Histograma de Idade") +
+  theme_minimal()
+
+# Boxplot
+ggplot(dados, aes(x = "", y = age)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(x = "", y = "Idade") +
+  ggtitle("Boxplot de Idade") +
+  theme_minimal()
+
+```
+
+
+Histograma e Boxplot do IMC dos pacientes:
+```{r}
+ggplot(dados, aes(x = bmi)) +
+  geom_histogram(binwidth = 9, fill = "lightblue", color = "black") +
+  labs(x = "IMC", y = "Contagem") +
+  ggtitle("Histograma do IMC") +
+  theme_minimal()
+
+# Boxplot
+ggplot(dados, aes(x = "", y = bmi)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(x = "", y = "IMC") +
+  ggtitle("Boxplot do IMC") +
+  theme_minimal()
+```
+Histograma (faltando) e boxplot para os níveis de hemoglobina glicada dos pacientes:
+
+```{r}
+# Boxplot
+ggplot(dados, aes(x = "", y = HbA1c_level)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(x = "", y = "Nível de HbA1c") +
+  ggtitle("Boxplot de Nível de HbA1c") +
+  theme_minimal()
+```
+Boxplot (faltando) e histograma para nível de glicose
+
+```{r}
+# Boxplot
+ggplot(dados, aes(x = "", y = blood_glucose_level)) +
+  geom_boxplot(fill = "lightblue", color = "black") +
+  labs(x = "", y = "Nível de Glicose no Sangue") +
+  ggtitle("Boxplot de Nível de Glicose no Sangue") +
+  theme_minimal()
+```
 
 
 # Correlação
