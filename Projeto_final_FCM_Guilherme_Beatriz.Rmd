@@ -202,7 +202,7 @@ head(dados_dicotomicos)
 ```
 
 
-Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo.
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo
 
 ```{r}
 theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
