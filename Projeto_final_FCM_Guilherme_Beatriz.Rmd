@@ -305,10 +305,11 @@ A relação do histórico de tabagismo com o diagnóstico de diabetes é muito s
 
 # Análise descritiva considerando as variáveis numéricas
 
-Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que
+Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que (...)
+
 
 # Correlação
-
+(ainda falta comentar...)
 ```{r}
 dados %>%
   select(age, hypertension, heart_disease, bmi, HbA1c_level, blood_glucose_level, diabetes) %>%
