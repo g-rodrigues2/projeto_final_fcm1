@@ -202,28 +202,7 @@ head(dados_dicotomicos)
 ```
 
 
-Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada, e os resultados foram obtidos a partir do gráfico de barras abaixo
-
-```{r}
-theme_set(theme_gray(base_size = 12) + theme(text = element_text(face = "bold"),
-                                             axis.title.x = element_text(face = "bold"),
-                                             axis.title.y = element_text(face = "bold"),
-                                             legend.title = element_text(face = "bold"),
-                                             legend.text = element_text(face = "bold")))
-
-ggplot(dados, aes(x = gender, fill = gender)) +
-  geom_bar() +
-  geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")+
-  scale_fill_manual(values = c("orange", "blue", "black"), labels = c("Feminino", "Masculino", "Outros")) +
-  labs(title = "Distribuição da Variável Gênero") +
-  xlab("Gênero") +
-  ylab("Contagem") +
-  scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
-  theme(legend.title = element_blank())
-
-```
-
-Como observado acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada e, como observado acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
 
 ```{r}
 (dados_dicotomicos %>% filter(gender == "Other"))
@@ -327,68 +306,143 @@ A relação do histórico de tabagismo com o diagnóstico de diabetes é muito s
 
 # Análise descritiva considerando as variáveis numéricas
 
-Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que (...)
-
-# Análise descritiva considerando todas as variáveis
-
-Nesta rodada de análises, vamos considerar todas as variáveis presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes dividindo em 9 subgrupos. Temos que
+Nesta rodada de análises, vamos considerar as variáveis numéricas presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes. Temos que
 
 ```{r}
 # Histograma
-ggplot(dados, aes(x = age)) +
-  geom_histogram(binwidth = 9, fill = "lightblue", color = "black") +
-  labs(x = "Idade", y = "Contagem") +
-  ggtitle("Histograma de Idade") +
-  theme_minimal()
+ggplot() +
+  geom_histogram(data = dados, aes(x = age, fill = "Não"), binwidth = 4, color = "black", alpha = 0.6) +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = age, fill = "Sim"), binwidth = 4, color = "black", alpha = 0.6) +
+  labs(x = "Idade", y = "Contagem", fill = "Diabetes") +
+  scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
+  ggtitle("Histograma de Idade com Diabetes") +
+  theme()
+
 
 # Boxplot
-ggplot(dados, aes(x = "", y = age)) +
-  geom_boxplot(fill = "lightblue", color = "black") +
-  labs(x = "", y = "Idade") +
+ggplot(dados, aes(x = factor(diabetes), y = age, fill = factor(diabetes))) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677")) +
+  labs(x = "Diabetes", y = "Idade") +
+  scale_x_discrete(breaks = c(0,1), label = c("Não", "Sim")) +
+  guides(fill = "none")+
   ggtitle("Boxplot de Idade") +
-  theme_minimal()
+  theme()
 
 ```
 
 
 Histograma e Boxplot do IMC dos pacientes:
 ```{r}
-ggplot(dados, aes(x = bmi)) +
-  geom_histogram(binwidth = 9, fill = "lightblue", color = "black") +
-  labs(x = "IMC", y = "Contagem") +
-  ggtitle("Histograma do IMC") +
-  theme_minimal()
+# Histograma
+ggplot() +
+  geom_histogram(data = dados, aes(x = bmi, fill = "Não"), binwidth = 4, color = "black", alpha = 0.6) +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = bmi, fill = "Sim"), binwidth = 4, color = "black", alpha = 0.6) +
+  labs(x = "IMC", y = "Contagem", fill = "Diabetes") +
+  scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
+  ggtitle("Histograma de IMC com Diabetes") +
+  theme()
+
 
 # Boxplot
-ggplot(dados, aes(x = "", y = bmi)) +
-  geom_boxplot(fill = "lightblue", color = "black") +
-  labs(x = "", y = "IMC") +
-  ggtitle("Boxplot do IMC") +
-  theme_minimal()
+ggplot(dados, aes(x = factor(diabetes), y = bmi, fill = factor(diabetes))) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677")) +
+  labs(x = "Diabetes", y = "IMC") +
+  scale_x_discrete(breaks = c(0,1), label = c("Não", "Sim")) +
+  guides(fill = "none")+
+  ggtitle("Boxplot de IMC") +
+  theme()
+
+# Scatterplot
+ggplot(dados, aes(x = age, y = bmi, fill = factor(diabetes))) +
+  geom_point(shape = 21, size = 2) +
+  labs(x = "Idade", y = "IMC", fill = "Diabetes") +
+  ggtitle("Idade por IMC") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677"),
+                    breaks = c(0,1), labels = c("Não","Sim")) +
+  theme()
+
 ```
 Histograma (faltando) e boxplot para os níveis de hemoglobina glicada dos pacientes:
 
 ```{r}
+# Histograma
+ggplot() +
+  geom_histogram(data = dados, aes(x = HbA1c_level, fill = "Não"), binwidth = 0.5, color = "black", alpha = 0.6) +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = HbA1c_level, fill = "Sim"), binwidth = 0.5, color = "black", alpha = 0.6) +
+  labs(x = "IMC", y = "Contagem", fill = "Diabetes") +
+  scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
+  ggtitle("Histograma de Nível de HbA1c com Diabetes") +
+  theme()
+
+
 # Boxplot
-ggplot(dados, aes(x = "", y = HbA1c_level)) +
-  geom_boxplot(fill = "lightblue", color = "black") +
-  labs(x = "", y = "Nível de HbA1c") +
+ggplot(dados, aes(x = factor(diabetes), y = HbA1c_level, fill = factor(diabetes))) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677")) +
+  labs(x = "Diabetes", y = "Nível de HbA1c") +
+  scale_x_discrete(breaks = c(0,1), label = c("Não", "Sim")) +
+  guides(fill = "none")+
   ggtitle("Boxplot de Nível de HbA1c") +
-  theme_minimal()
+  theme()
+
+# Scatterplot
+ggplot(dados, aes(x = age, y = HbA1c_level, fill = factor(diabetes))) +
+  geom_point(shape = 21, size = 2) +
+  labs(x = "Idade", y = "Nível de HbA1c", fill = "Diabetes") +
+  ggtitle("Nível de HbA1c por Idade") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677"),
+                    breaks = c(0,1), labels = c("Não","Sim")) +
+  theme()
 ```
 Boxplot (faltando) e histograma para nível de glicose
 
 ```{r}
+# Histograma
+ggplot() +
+  geom_histogram(data = dados, aes(x = blood_glucose_level, fill = "Não"), 
+                 binwidth = 20, color = "black", alpha = 0.6) +
+  geom_histogram(data = subset(dados, diabetes == 1), 
+                 aes(x = blood_glucose_level, fill = "Sim"), 
+                 binwidth = 20, color = "black", alpha = 0.6) +
+  labs(x = "Nível de glicose", y = "Contagem", fill = "Diabetes") +
+  scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
+  ggtitle("Histograma de Nível de glicose com Diabetes") +
+  theme()
+
+
 # Boxplot
-ggplot(dados, aes(x = "", y = blood_glucose_level)) +
-  geom_boxplot(fill = "lightblue", color = "black") +
-  labs(x = "", y = "Nível de Glicose no Sangue") +
-  ggtitle("Boxplot de Nível de Glicose no Sangue") +
-  theme_minimal()
+ggplot(dados, aes(x = factor(diabetes), y = blood_glucose_level, fill = factor(diabetes))) +
+  geom_boxplot(color = "black") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677")) +
+  labs(x = "Diabetes", y = "Nível de glicose") +
+  scale_x_discrete(breaks = c(0,1), label = c("Não", "Sim")) +
+  guides(fill = "none")+
+  ggtitle("Boxplot de Nível de glicose") +
+  theme()
+
+# Scatterplot
+ggplot(dados, aes(x = blood_glucose_level, y = HbA1c_level, fill = factor(diabetes))) +
+  geom_point(shape = 21, size = 2) +
+  labs(x = "Nível de glicose", y = "Nível de HbA1c", fill = "Diabetes") +
+  ggtitle("Nível de glicose por Nível de HbA1c") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677"),
+                    breaks = c(0,1), labels = c("Não","Sim")) +
+  theme()
+
+# Scatterplot
+ggplot(dados, aes(x = age, y = blood_glucose_level, fill = factor(diabetes))) +
+  geom_point(shape = 21, size = 2) +
+  labs(x = "Idade", y = "Nível de glicose", fill = "Diabetes") +
+  ggtitle("Nível de glicose por Idade") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677"),
+                    breaks = c(0,1), labels = c("Não","Sim")) +
+  theme()
 ```
 
 
-# Correlação
+# Correlação de diabetes com as variáveis
 (ainda falta comentar...)
 ```{r}
 dados %>%
@@ -401,10 +455,11 @@ dados %>%
   mutate(Variable2 = reorder(Variable2, Correlation)) %>%
   ggplot(aes(Variable, Variable2, fill = Correlation)) +
   geom_tile() +
-  geom_text(aes(label = round(Correlation, 4)), color = "black", size = 3) +
-  labs(title = "Correlação com a variável Diabetes",
+  geom_text(aes(label = round(Correlation, 3)), color = "black", size = 3) +
+  labs(title = "Correlação com a Diabetes",
        x = "", y = "", fill = "Correlação") +
   scale_fill_gradient2(low = "#3C61A0", mid = "#F7F7F7", high = "#CC6677", midpoint = 0) +
+  scale_y_discrete(labels = c("Doença cardíaca", "Hipertensão", "IMC", "Idade", "Nível de HbA1c", "Nível de glicose", "Diabetes")) +
   theme()
 
 ```
