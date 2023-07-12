@@ -1,11 +1,11 @@
 ---
 title: "Projeto Final FCM: Análise descritiva em um dataset sobre diabetes "
 author: "Guilherme Rodrigues e Beatriz Magiore"
-date: "2023-06-19"
+date: "2023-07-13"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE,, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
 ```
@@ -19,7 +19,7 @@ A análise descritiva desses dados, considerando estatísticas básicas, distrib
 
 Vamos carregar as bibliotecas:
 
-```{r, message=FALSE}
+```{r}
 library(ggplot2)
 library(tidyr)
 library(dplyr)
@@ -56,11 +56,14 @@ As variáveis podem ser divididas em numéricas e categóricas.
 
 
 Exibindo informações do *dataframe*:
+
 ```{r}
 str(sapply(dados, unique))
 
 ```
+
 Como alguams variáveis são categóricas, primeiramente vamos fazer uma conversão da representação dessas variáveis, para então fazermos um resumo estatístico dos dados:
+
 ```{r}
 dados %>%
   mutate(
@@ -116,21 +119,19 @@ contagem_diabetes %>%
   ggplot(aes(x = diabetes, y = n, fill = diabetes)) +
     geom_bar(stat = "identity") +
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
-    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Diabetes", x = "Diabetes", y = "Contagem")+
     theme(legend.title = element_blank())
 ```
 
-
 * Com relação a variável *smoking_history*, que apresenta as informações acerca do uso de tabaco, temos a classificação:
 
   + "*Never*": indivíduos que nunca fumaram;
-  + "*Former*": indivíduos que fumavam mas estão em abstinência há muito tempo
-  + "*Not current*": indivíduos que costumavam fumar, mas atualmente não fumam
+  + "*Former*": indivíduos que fumavam mas estão em abstinência há muito tempo;
+  + "*Not current*": indivíduos que costumavam fumar, mas atualmente não fumam;
   + "*Ever*": indivíduos que já foram fumantes;
   + "*Current*": indivíduos que fumam atualmente;
   + "*No info*": indivíduos cujo histórico de tabagismo é desconhecido.
-
 
 ```{r}
 dados_smoking <- dados %>% select(gender, smoking_history, diabetes)
@@ -152,7 +153,6 @@ dados_smoking %>%
 
 * Com relação a variável *hypertension*, que apresenta as informações acerca de pacientes com hipertensão, temos que 7485 possuem tal condição.
 
-
 ```{r}
 contagem_hipertensao <- dados %>%
   count(hypertension) %>%
@@ -162,7 +162,7 @@ contagem_hipertensao %>%
   ggplot(aes(x = hypertension, y = n, fill = hypertension)) +
     geom_bar(stat = "identity") +
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
-    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Hipertensão", x = "Hipertensão", y = "Contagem")+
     theme(legend.title = element_blank())
 ```
@@ -178,7 +178,7 @@ contagem_doencacardiaca %>%
   ggplot(aes(x = heart_disease, y = n, fill = heart_disease)) +
     geom_bar(stat = "identity") +
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
-    scale_fill_manual(values = rcartocolor::carto_pal(2,"Safe")) +
+    scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Doença Cardíaca", x = "Doença Cardíaca", y = "Contagem")+
     theme(legend.title = element_blank())
 ```
@@ -192,8 +192,7 @@ em que $p$ é a probabilidade de sucessos e $1-p$ a probabilidade de fracassos. 
 \[E(X)=p,\quad Var(X)=p(1-p)\]
 
 
-Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease, diabetes*. Realizamos a filtragem destas variáveis por meio do comando *filter*, e salvamos em uma variável "dados_dicotomicos". Segue que
-
+Nesta análise, voltaremos nossa atenção para as colunas *gender, hypertension, heart_disease* e as suas relações com a *diabetes*. Realizamos a filtragem destas variáveis por meio do comando *filter*, e salvamos em uma variável "dados_dicotomicos". Segue que
 
 ```{r}
 dados_dicotomicos <- dados %>% select(gender, hypertension, heart_disease, diabetes)
@@ -201,8 +200,7 @@ head(dados_dicotomicos)
 
 ```
 
-
-Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada e, como observado acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
+Uma análise preliminar relacionada a distribuição de pacientes divididos por gênero foi realizada e, como observado mais acima, 18 indivíduos informaram o gênero como *Others*. Como os dados de saúde dessa população podem afetar o andamento de algumas análises como, por exemplo, os cálculos dos coeficientes de variação, analisamos os dados de saúde desta população em específico, para verificar a sua contribuição. A priori, filtramos esta população do conjunto de dados dicotômicos e obtivemos os seguintes resultados:
 
 ```{r}
 (dados_dicotomicos %>% filter(gender == "Other"))
@@ -214,7 +212,6 @@ Nenhum dos indivíduos que se identificam como *Outro* gênero apresentou alguma
 ```{r}
 dados_dicotomicos_others <- dados_dicotomicos %>% filter(gender != "Other")
 ```
-
 
 Para avaliar se os pacientes saíram do banco de dados podemos utilizar o comando *grepl*:
 
@@ -246,6 +243,7 @@ dados_dicotomicos_exploration <- dados_dicotomicos_others %>%
 Podemos observar que, em média, os homens possuem maior prevalência das doenças analisadas, e além disso, a presença destas doenças em homens é mais homogênea do que em mulheres, dado que os coeficientes de variação são mais baixos no gênero masculino.
 
 Realizando uma análise de relação entre a incidência de diabetes em indivíduos com hipertensão
+
 ```{r}
 dados_dicotomicos %>%
   group_by(hypertension, diabetes) %>%
@@ -261,7 +259,8 @@ dados_dicotomicos %>%
     theme()
 ```
 
-E agora para a relação com doenças cardíacas:
+E a relação com doenças cardíacas:
+
 ```{r}
 dados_dicotomicos %>%
   group_by(heart_disease, diabetes) %>%
@@ -276,9 +275,10 @@ dados_dicotomicos %>%
     geom_text(aes(label = count), position = position_dodge(width = 0.9), vjust = -0.5) +
     theme()
 ```
-Assim, percebemos que pessoas hipertensas e/ou com doenças cardíacas são mais propensaas a ter diabetes do que aquelas que não possuem tais condições.
 
-Realizando esta mesma análise com as informações de tabagismo, agrupando os indivíduos como os que nunca fumaram, os que já fumaram no passado e os que fumam atualmente
+Assim, percebemos que pessoas hipertensas e/ou com doenças cardíacas são mais propensas a ter diabetes do que aquelas que não possuem tais condições.
+
+Realizando esta mesma análise com as informações de tabagismo, desconsideramos aqueles classificados como *No info* e agrupamos os indivíduos como os que nunca fumaram, os que já fumaram no passado e os que fumam atualmente.
 
 ```{r}
 dados_smoking <- dados %>%
@@ -302,11 +302,13 @@ dados_smoking %>%
     theme()
 ```
 
-A relação do histórico de tabagismo com o diagnóstico de diabetes é muito sutil, sendo levemente maior para aqueles que fumaram no passado.
+Notamos que a relação do histórico de tabagismo com o diagnóstico de diabetes é muito sutil, sendo levemente maior para aqueles que fumaram no passado e, dessa foma, não é possível estabelecer uma relação concreta entre as duas variáveis..
 
 # Análise descritiva considerando as variáveis numéricas
 
-Nesta rodada de análises, vamos considerar as variáveis numéricas presentes no *dataset*. A priori vamos analisar a distribuição da faixa etária dos pacientes. Temos que
+Agora, nesta rodada de análises, vamos considerar as variáveis numéricas presentes no *dataset*: *age, bmi, HbA1c_level, blood_glucose_level* e as suas relações com a *diabetes*. 
+
+A priori vamos analisar a distribuição da faixa etária dos pacientes.
 
 ```{r}
 # Histograma
@@ -331,8 +333,10 @@ ggplot(dados, aes(x = factor(diabetes), y = age, fill = factor(diabetes))) +
 
 ```
 
+A partir do histograma e boxplot, podemos verificar que há uma maior prevalência de diabetes com o aumento da idade dos indivíduos. Enquanto a média de idade dos indivíduos sem diabetes é de 40,1 anos, a dos indivíduos com diabetes é de 60,9 anos.
 
-Histograma e Boxplot do IMC dos pacientes:
+Analisando a distribuição do IMC dos indivíduos
+
 ```{r}
 # Histograma
 ggplot() +
@@ -354,7 +358,12 @@ ggplot(dados, aes(x = factor(diabetes), y = bmi, fill = factor(diabetes))) +
   ggtitle("Boxplot de IMC") +
   theme()
 
-# Scatterplot
+```
+
+Embora amplamente utilizado, o IMC é uma medida apenas de peso corporal em relação à altura, tendo grandes limitações significativas como medida isolada de saúde, assim, não é possível estabelecer uma relação direta entre tal medida e o diagnóstico de diabetes.
+
+```{r}
+# Scatterplot - Idade-IMC
 ggplot(dados, aes(x = age, y = bmi, fill = factor(diabetes))) +
   geom_point(shape = 21, size = 2) +
   labs(x = "Idade", y = "IMC", fill = "Diabetes") +
@@ -362,9 +371,11 @@ ggplot(dados, aes(x = age, y = bmi, fill = factor(diabetes))) +
   scale_fill_manual(values = c("#88CCEE", "#CC6677"),
                     breaks = c(0,1), labels = c("Não","Sim")) +
   theme()
-
 ```
-Histograma (faltando) e boxplot para os níveis de hemoglobina glicada dos pacientes:
+
+Agora, ao visualizar a distribuição dos casos de diabetes em relação à idade e ao IMC, é possível estabelecer melhor relação com essas variáveis e notar que para os indivíduos com idade maior que 40 anos e IMC maior que 30, a incidência de diabetes aumenta drasticamente.
+
+Analisando os níveis de hemoglobina glicada dos pacientes:
 
 ```{r}
 # Histograma
@@ -376,7 +387,6 @@ ggplot() +
   ggtitle("Histograma de Nível de HbA1c com Diabetes") +
   theme()
 
-
 # Boxplot
 ggplot(dados, aes(x = factor(diabetes), y = HbA1c_level, fill = factor(diabetes))) +
   geom_boxplot(color = "black") +
@@ -386,7 +396,11 @@ ggplot(dados, aes(x = factor(diabetes), y = HbA1c_level, fill = factor(diabetes)
   guides(fill = "none")+
   ggtitle("Boxplot de Nível de HbA1c") +
   theme()
+```
 
+É possível observar uma relação muito mais clara entre o nível de hemoglobina glicada com o diagnóstico de diabetes do que as variáveis consideradas anteriormente. Notamos que a faixa de valores coincidente para os dois grupos é bem pequena.
+
+```{r}
 # Scatterplot
 ggplot(dados, aes(x = age, y = HbA1c_level, fill = factor(diabetes))) +
   geom_point(shape = 21, size = 2) +
@@ -396,7 +410,10 @@ ggplot(dados, aes(x = age, y = HbA1c_level, fill = factor(diabetes))) +
                     breaks = c(0,1), labels = c("Não","Sim")) +
   theme()
 ```
-Boxplot (faltando) e histograma para nível de glicose
+
+Ao distribuir os casos de diabetes em relação à idade e ao nível de HbA1c, os indivíduos diagnosticados com diabetes, em sua grande maioria, apresentam valores de HbA1c iguais ou superiores a 6,7, independente da sua idade, valendo o mesmo para o contrário, nenhum dos indivíduos com HbA1c menor ou igual a 5 possui diagnóstico de diabetes.
+
+Agora, analisando o nível de glicose no sangue
 
 ```{r}
 # Histograma
@@ -421,16 +438,11 @@ ggplot(dados, aes(x = factor(diabetes), y = blood_glucose_level, fill = factor(d
   guides(fill = "none")+
   ggtitle("Boxplot de Nível de glicose") +
   theme()
+```
 
-# Scatterplot
-ggplot(dados, aes(x = blood_glucose_level, y = HbA1c_level, fill = factor(diabetes))) +
-  geom_point(shape = 21, size = 2) +
-  labs(x = "Nível de glicose", y = "Nível de HbA1c", fill = "Diabetes") +
-  ggtitle("Nível de glicose por Nível de HbA1c") +
-  scale_fill_manual(values = c("#88CCEE", "#CC6677"),
-                    breaks = c(0,1), labels = c("Não","Sim")) +
-  theme()
+Observamos uma relação semelhante a do nível de HbA1c, em que os grupos possuem um pequeno intervalo de valores coincidentes.
 
+```{r}
 # Scatterplot
 ggplot(dados, aes(x = age, y = blood_glucose_level, fill = factor(diabetes))) +
   geom_point(shape = 21, size = 2) +
@@ -441,9 +453,13 @@ ggplot(dados, aes(x = age, y = blood_glucose_level, fill = factor(diabetes))) +
   theme()
 ```
 
+E também, assim como o nível de hemoglobina, é possível visulizar uma delimitação significativa no valor do nível de glicose sanguínea dos dois grupos de diagnóstico de diabetes.
+
 
 # Correlação de diabetes com as variáveis
-(ainda falta comentar...)
+
+Por fim, após analisarmos a relação  de cada uma das variáveis com a diabetes, reafirmamos o que foi observado através de um mapa de correlação da diabetes com cada uma das variáveis (exceto apenas o histórico de tabagismo):
+
 ```{r}
 dados %>%
   select(age, hypertension, heart_disease, bmi, HbA1c_level, blood_glucose_level, diabetes) %>%
@@ -464,3 +480,18 @@ dados %>%
 
 ```
 
+E, assim, podemos notar que, conforme já verificado, as maiores correlações da diabetes são com o nível de glicose e o nível de HbA1c, e menores para as demais variáveis.
+
+# Conclusões
+
+* Observamos que a prevalência de diabetes é maior em homens em comparação com mulheres. Além disso, pacientes com hipertensão e doenças cardíacas têm maior propensão a ter diabetes.
+
+* Verificamos que o histórico de tabagismo apresenta uma relação sutil com o diagnóstico de diabetes, sem uma associação clara.
+
+* Em relação às variáveis numéricas, observamos que a idade e o IMC têm uma associação positiva com o diagnóstico de diabetes. Indivíduos com idade acima de 40 anos e IMC acima de 30 apresentam maior incidência da doença.
+
+* Os níveis de HbA1c e glicose no sangue apresentaram uma relação mais clara com o diagnóstico de diabetes. Valores elevados dessas variáveis estão associados a um maior risco de desenvolver a doença.
+
+* Ao considerar a correlação da diabetes com as variáveis, confirmamos que as maiores correlações estão com os níveis de glicose e HbA1c, reforçando sua importância como indicadores da doença.
+
+* Com base nessas análises, é possível concluir que fatores como idade, gênero, hipertensão, doenças cardíacas, níveis de HbA1c e glicose no sangue desempenham um papel significativo na incidência de diabetes. Esses resultados podem auxiliar na identificação de indivíduos em risco e no desenvolvimento de estratégias de prevenção e tratamento personalizados.
