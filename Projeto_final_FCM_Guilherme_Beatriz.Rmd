@@ -98,13 +98,12 @@ dados %>%
     geom_bar() +
     geom_text(stat = "count", aes(label = after_stat(count)), vjust = -0.5, color = "black")+
     scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe"),
-                      breaks = c("Female","Male","Others"),
-                      labels = c("Feminino", "Masculino", "Outros")) +
+                      breaks = c("Female","Male","Others")) +
     labs(title = "Contagem por Gênero") +
     xlab("Gênero") +
     ylab("Contagem") +
     scale_x_discrete(labels = c("Feminino", "Masculino", "Outros"))+
-    theme(legend.title = element_blank())
+    theme(legend.position = "none")
 
 ```
 
@@ -121,7 +120,7 @@ contagem_diabetes %>%
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
     scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Diabetes", x = "Diabetes", y = "Contagem")+
-    theme(legend.title = element_blank())
+    theme(legend.position = "none")
 ```
 
 * Com relação a variável *smoking_history*, que apresenta as informações acerca do uso de tabaco, temos a classificação:
@@ -148,7 +147,7 @@ dados_smoking %>%
                       label = c("Never", "Former", "Not current", "Ever", "Current", "No info"),
                       name = "Histórico")+
     scale_x_discrete(label = c("Never", "Former", "Not current", "Ever", "Current", "No info"))+
-    theme(legend.title = element_blank())
+    theme(legend.position = "none")
 ```
 
 * Com relação a variável *hypertension*, que apresenta as informações acerca de pacientes com hipertensão, temos que 7485 possuem tal condição.
@@ -164,7 +163,7 @@ contagem_hipertensao %>%
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
     scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Hipertensão", x = "Hipertensão", y = "Contagem")+
-    theme(legend.title = element_blank())
+    theme(legend.position = "none")
 ```
 
 * Com relação a variável *heart_desease*, que apresenta as informações acerca de pacientes com doenças cardíacas, temos que 3942 deles possuem alguma doença.
@@ -180,7 +179,7 @@ contagem_doencacardiaca %>%
     geom_text(aes(label = n), vjust = -0.5, color = "black") +
     scale_fill_manual(values = rcartocolor::carto_pal(3,"Safe")) +
     labs(title = "Contagem por Doença Cardíaca", x = "Doença Cardíaca", y = "Contagem")+
-    theme(legend.title = element_blank())
+    theme(legend.position = "none")
 ```
 
 # Análise descritiva considerando as variáveis categóricas
@@ -313,8 +312,9 @@ A priori vamos analisar a distribuição da faixa etária dos pacientes.
 ```{r}
 # Histograma
 ggplot() +
-  geom_histogram(data = dados, aes(x = age, fill = "Não"), binwidth = 4, color = "black", alpha = 0.6) +
-  geom_histogram(data = subset(dados, diabetes == 1), aes(x = age, fill = "Sim"), binwidth = 4, color = "black", alpha = 0.6) +
+  geom_histogram(data = dados, aes(x = age, fill = "Não"), binwidth = 4, color = "black") +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = age, fill = "Sim"), 
+                 binwidth = 4, color = "black") +
   labs(x = "Idade", y = "Contagem", fill = "Diabetes") +
   scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
   ggtitle("Histograma de Idade com Diabetes") +
@@ -340,8 +340,9 @@ Analisando a distribuição do IMC dos indivíduos
 ```{r}
 # Histograma
 ggplot() +
-  geom_histogram(data = dados, aes(x = bmi, fill = "Não"), binwidth = 4, color = "black", alpha = 0.6) +
-  geom_histogram(data = subset(dados, diabetes == 1), aes(x = bmi, fill = "Sim"), binwidth = 4, color = "black", alpha = 0.6) +
+  geom_histogram(data = dados, aes(x = bmi, fill = "Não"), binwidth = 4, color = "black") +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = bmi, fill = "Sim"), 
+                 binwidth = 4, color = "black") +
   labs(x = "IMC", y = "Contagem", fill = "Diabetes") +
   scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
   ggtitle("Histograma de IMC com Diabetes") +
@@ -360,7 +361,23 @@ ggplot(dados, aes(x = factor(diabetes), y = bmi, fill = factor(diabetes))) +
 
 ```
 
-Embora amplamente utilizado, o IMC é uma medida apenas de peso corporal em relação à altura, tendo grandes limitações significativas como medida isolada de saúde, assim, não é possível estabelecer uma relação direta entre tal medida e o diagnóstico de diabetes.
+Como esses gráficos não nos permitem visualizar a real relação entre as variáveis para valores de IMC maiores que 50, representaremos as informações de outro modo para melhor visualização.
+
+```{r}
+breaks <- seq(0, ceiling(max(dados$bmi)), by = 4)
+labels <- sprintf("(%d, %d]", breaks[-length(breaks)], breaks[-1])
+
+dados %>%
+  mutate(intervalo_bmi = cut(bmi, breaks = breaks, labels = labels, include.lowest = TRUE))%>%
+  ggplot(aes(x = intervalo_bmi, fill = factor(diabetes))) +
+  geom_bar(position = "fill") +
+  labs(x = "IMC", y = "Proporção", fill = "Diabetes") +
+  scale_fill_manual(values = c("#88CCEE", "#CC6677"),label = c("Não", "Sim")) +
+  ggtitle("Relação entre IMC e Diabetes") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+*Obs.:* Embora amplamente utilizado, o IMC é uma medida apenas de peso corporal em relação à altura, tendo grandes limitações significativas como medida isolada de saúde, assim, é preciso ter cuidado ao considerar uma relação individual dessa variável.
 
 ```{r}
 # Scatterplot - Idade-IMC
@@ -380,8 +397,8 @@ Analisando os níveis de hemoglobina glicada dos pacientes:
 ```{r}
 # Histograma
 ggplot() +
-  geom_histogram(data = dados, aes(x = HbA1c_level, fill = "Não"), binwidth = 0.5, color = "black", alpha = 0.6) +
-  geom_histogram(data = subset(dados, diabetes == 1), aes(x = HbA1c_level, fill = "Sim"), binwidth = 0.5, color = "black", alpha = 0.6) +
+  geom_histogram(data = dados, aes(x = HbA1c_level, fill = "Não"), binwidth = 0.5, color = "black") +
+  geom_histogram(data = subset(dados, diabetes == 1), aes(x = HbA1c_level, fill = "Sim"), binwidth = 0.5, color = "black") +
   labs(x = "IMC", y = "Contagem", fill = "Diabetes") +
   scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
   ggtitle("Histograma de Nível de HbA1c com Diabetes") +
@@ -419,10 +436,10 @@ Agora, analisando o nível de glicose no sangue
 # Histograma
 ggplot() +
   geom_histogram(data = dados, aes(x = blood_glucose_level, fill = "Não"), 
-                 binwidth = 20, color = "black", alpha = 0.6) +
+                 binwidth = 20, color = "black") +
   geom_histogram(data = subset(dados, diabetes == 1), 
                  aes(x = blood_glucose_level, fill = "Sim"), 
-                 binwidth = 20, color = "black", alpha = 0.6) +
+                 binwidth = 20, color = "black") +
   labs(x = "Nível de glicose", y = "Contagem", fill = "Diabetes") +
   scale_fill_manual(values = c("Não" = "#88CCEE", "Sim" = "#CC6677")) +
   ggtitle("Histograma de Nível de glicose com Diabetes") +
